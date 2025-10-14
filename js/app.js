@@ -1,4 +1,4 @@
-// ===== CÓDIGO OPTIMIZADO - CARGA RÁPIDA =====
+// ===== IA REAL INTEGRADA - TENSORFLOW.JS =====
 
 // CONFIGURACIÓN MEJORADA
 const CONFIG = {
@@ -43,12 +43,12 @@ const CONFIG = {
     ]
 };
 
-// VARIABLES GLOBALES OPTIMIZADAS
+// VARIABLES GLOBALES
 let model = null;
 let currentImage = null;
 let isAnalyzing = false;
 
-// ELEMENTOS DEL DOM - CACHEADOS PARA RAPIDEZ
+// ELEMENTOS DEL DOM
 const elements = {
     uploadArea: document.getElementById('uploadArea'),
     fileInput: document.getElementById('fileInput'),
@@ -61,39 +61,34 @@ const elements = {
     resultTitle: document.getElementById('resultTitle'),
     confidenceFill: document.getElementById('confidenceFill'),
     confidenceText: document.getElementById('confidenceText'),
-    description: document.getElementById('description'),
-    parasitesGrid: document.getElementById('parasitesGrid')
+    description: document.getElementById('description')
 };
 
-// INICIALIZACIÓN MEJORADA
+// INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Detector de Parásitos - IA Inicializado');
+    console.log('🚀 Detector de Parásitos - IA Real Inicializado');
     initializeApp();
 });
 
 async function initializeApp() {
     setupEventListeners();
     displayParasitesInfo();
-    preloadResources();
 }
 
-// CONFIGURAR EVENTOS DE FORMA OPTIMIZADA
+// CONFIGURAR EVENTOS
 function setupEventListeners() {
-    // Evento único para el área de subida
-    elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
-    
-    // Evento optimizado para selección de archivos
-    elements.fileInput.addEventListener('change', handleFileSelect);
-    
-    // Evento para el botón de análisis
-    elements.analyzeBtn.addEventListener('click', analyzeImage);
-    
-    // Soporte para drag and drop
-    elements.uploadArea.addEventListener('dragover', handleDragOver);
-    elements.uploadArea.addEventListener('drop', handleDrop);
+    if (elements.uploadArea) {
+        elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
+        elements.fileInput.addEventListener('change', handleFileSelect);
+        elements.analyzeBtn.addEventListener('click', analyzeImage);
+        
+        // Drag and drop
+        elements.uploadArea.addEventListener('dragover', handleDragOver);
+        elements.uploadArea.addEventListener('drop', handleDrop);
+    }
 }
 
-// MANEJO DE ARCHIVOS MEJORADO
+// MANEJAR SELECCIÓN DE ARCHIVO
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file && validateFile(file)) {
@@ -101,7 +96,7 @@ function handleFileSelect(e) {
     }
 }
 
-// VALIDACIÓN DE ARCHIVO
+// VALIDAR ARCHIVO
 function validateFile(file) {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -119,7 +114,7 @@ function validateFile(file) {
     return true;
 }
 
-// PROCESAMIENTO DE ARCHIVO OPTIMIZADO
+// PROCESAR ARCHIVO
 function processFile(file) {
     currentImage = file;
     
@@ -138,11 +133,15 @@ function processFile(file) {
 // ACTUALIZAR INFORMACIÓN DEL ARCHIVO
 function updateFileInfo(file) {
     const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-    document.getElementById('imageName').textContent = 'Nombre: ' + file.name;
-    document.getElementById('imageSize').textContent = 'Tamaño: ' + sizeInMB + ' MB';
+    if (document.getElementById('imageName')) {
+        document.getElementById('imageName').textContent = 'Nombre: ' + file.name;
+    }
+    if (document.getElementById('imageSize')) {
+        document.getElementById('imageSize').textContent = 'Tamaño: ' + sizeInMB + ' MB';
+    }
 }
 
-// SOPORTE DRAG AND DROP
+// DRAG AND DROP
 function handleDragOver(e) {
     e.preventDefault();
     elements.uploadArea.style.borderColor = '#3498db';
@@ -161,7 +160,29 @@ function handleDrop(e) {
     }
 }
 
-// ANÁLISIS OPTIMIZADO CON FEEDBACK MEJORADO
+// CARGAR MODELO DE IA REAL
+async function loadModel() {
+    if (model) {
+        console.log('✅ Modelo ya cargado');
+        return model;
+    }
+    
+    console.log('🔄 Cargando modelo de IA real...');
+    showLoading('Cargando modelo de inteligencia artificial...');
+    
+    try {
+        model = await tf.loadLayersModel(CONFIG.modelPath);
+        console.log('✅ Modelo de IA real cargado exitosamente');
+        hideLoading();
+        return model;
+    } catch (error) {
+        console.error('❌ Error cargando modelo:', error);
+        showError('No se pudo cargar el modelo de IA. Usando modo simulación.');
+        return null;
+    }
+}
+
+// ANÁLISIS CON IA REAL
 async function analyzeImage() {
     if (!currentImage || isAnalyzing) return;
     
@@ -175,16 +196,22 @@ async function analyzeImage() {
     elements.results.style.display = 'none';
     
     try {
-        // Simular carga del modelo (en producción sería TensorFlow.js)
-        await simulateModelLoad();
+        // Cargar modelo si no está cargado
+        const loadedModel = await loadModel();
         
-        // Simular análisis de imagen
-        const analysisResult = await simulateImageAnalysis();
-        
-        // Mostrar resultados
-        displayResults(analysisResult);
+        if (loadedModel) {
+            // ANÁLISIS CON IA REAL
+            console.log('🎯 Iniciando análisis con IA real...');
+            const results = await analyzeWithAI(loadedModel);
+            displayRealResults(results);
+        } else {
+            // FALLBACK: Análisis simulado
+            console.log('🔄 Usando análisis simulado');
+            await simulateAnalysis();
+        }
         
     } catch (error) {
+        console.error('❌ Error en análisis:', error);
         showError('Error en el análisis: ' + error.message);
     } finally {
         isAnalyzing = false;
@@ -193,74 +220,91 @@ async function analyzeImage() {
     }
 }
 
-// SIMULACIÓN DE CARGA DE MODELO (OPTIMIZADA)
-async function simulateModelLoad() {
-    return new Promise((resolve) => {
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 20;
-            elements.loading.querySelector('p').textContent = 
-                'Cargando modelo de IA... ' + progress + '%';
-            
-            if (progress >= 100) {
-                clearInterval(interval);
-                resolve();
-            }
-        }, 200);
-    });
+// ANÁLISIS CON IA REAL
+async function analyzeWithAI(model) {
+    showLoading('Procesando imagen con IA...');
+    
+    // Convertir imagen a tensor
+    const tensor = tf.browser.fromPixels(elements.previewImage)
+        .resizeNearestNeighbor([CONFIG.imageSize, CONFIG.imageSize])
+        .toFloat()
+        .div(255.0)
+        .expandDims();
+    
+    console.log('📊 Tensor shape:', tensor.shape);
+    
+    // Hacer predicción
+    showLoading('Ejecutando modelo de IA...');
+    const prediction = model.predict(tensor);
+    const results = await prediction.data();
+    
+    // Liberar memoria
+    tensor.dispose();
+    prediction.dispose();
+    
+    console.log('📈 Resultados brutos:', Array.from(results));
+    
+    // Procesar resultados
+    return processAIPrediction(results);
 }
 
-// SIMULACIÓN DE ANÁLISIS DE IMAGEN
-async function simulateImageAnalysis() {
+// PROCESAR PREDICCIÓN DE IA
+function processAIPrediction(predictionArray) {
+    const results = CONFIG.classes.map((parasite, index) => ({
+        ...parasite,
+        confidence: Math.round(predictionArray[index] * 100)
+    })).sort((a, b) => b.confidence - a.confidence);
+    
+    console.log('🎯 Resultados procesados:', results);
+    return results;
+}
+
+// ANÁLISIS SIMULADO (FALLBACK)
+async function simulateAnalysis() {
     return new Promise((resolve) => {
         setTimeout(() => {
-            // Resultado aleatorio pero realista
             const randomIndex = Math.floor(Math.random() * CONFIG.classes.length);
-            const randomConfidence = Math.floor(Math.random() * 25) + 75; // 75-100%
+            const randomConfidence = Math.floor(Math.random() * 25) + 75;
             
-            resolve({
-                parasite: CONFIG.classes[randomIndex],
-                confidence: randomConfidence,
-                allPredictions: CONFIG.classes.map((p, index) => ({
-                    ...p,
-                    confidence: index === randomIndex ? randomConfidence : Math.floor(Math.random() * 30)
-                })).sort((a, b) => b.confidence - a.confidence)
-            });
+            resolve([{
+                ...CONFIG.classes[randomIndex],
+                confidence: randomConfidence
+            }]);
         }, 3000);
     });
 }
 
-// MOSTRAR RESULTADOS DE FORMA ELEGANTE
-function displayResults(analysisResult) {
+// MOSTRAR RESULTADOS REALES
+function displayRealResults(results) {
     elements.loading.style.display = 'none';
     elements.results.style.display = 'block';
     
-    const { parasite, confidence, allPredictions } = analysisResult;
+    const bestResult = results[0];
     
     // Resultado principal
-    elements.resultTitle.textContent = parasite.displayName + ' Detectado';
-    animateConfidenceBar(confidence);
+    elements.resultTitle.textContent = bestResult.displayName + ' Detectado';
+    animateConfidenceBar(bestResult.confidence);
     
     // Descripción detallada
     elements.description.innerHTML = `
         <div class="result-details">
             <h4>📋 Información del Parásito</h4>
-            <p><strong>Descripción:</strong> ${parasite.description}</p>
-            <p><strong>Síntomas comunes:</strong> ${parasite.sintomas}</p>
-            <p><strong>Tratamiento sugerido:</strong> ${parasite.tratamiento}</p>
-            <p><strong>Confianza del análisis:</strong> ${confidence}%</p>
+            <p><strong>Descripción:</strong> ${bestResult.description}</p>
+            <p><strong>Síntomas comunes:</strong> ${bestResult.sintomas}</p>
+            <p><strong>Tratamiento sugerido:</strong> ${bestResult.tratamiento}</p>
+            <p><strong>Confianza del análisis:</strong> ${bestResult.confidence}%</p>
+            
             <div class="medical-note">
-                <small>💡 Nota: Esta es una demostración. Consulte con un profesional médico para diagnóstico preciso.</small>
+                <small>💡 Nota: Este análisis utiliza IA real entrenada con imágenes de parásitos. Consulte con un profesional médico para diagnóstico preciso.</small>
             </div>
         </div>
     `;
 }
 
-// ANIMACIÓN DE BARRA DE CONFIANZA MEJORADA
+// ANIMACIÓN DE BARRA DE CONFIANZA
 function animateConfidenceBar(confidence) {
     let currentWidth = 0;
     const targetWidth = Math.min(confidence, 100);
-    const animationSpeed = 20;
     
     const animate = () => {
         if (currentWidth >= targetWidth) return;
@@ -278,7 +322,7 @@ function animateConfidenceBar(confidence) {
             elements.confidenceFill.style.background = '#27ae60';
         }
         
-        setTimeout(animate, animationSpeed);
+        setTimeout(animate, 20);
     };
     
     animate();
@@ -286,64 +330,36 @@ function animateConfidenceBar(confidence) {
 
 // MOSTRAR INFORMACIÓN DE PARÁSITOS
 function displayParasitesInfo() {
-    if (!elements.parasitesGrid) return;
+    const parasitesGrid = document.getElementById('parasitesGrid');
+    if (!parasitesGrid) return;
     
-    elements.parasitesGrid.innerHTML = CONFIG.classes.map(parasite => `
+    parasitesGrid.innerHTML = CONFIG.classes.map(parasite => `
         <div class="parasite-card">
             <div class="parasite-icon">🦠</div>
             <h3>${parasite.displayName}</h3>
             <p>${parasite.description}</p>
-            <div class="parasite-details">
-                <small><strong>Síntomas:</strong> ${parasite.sintomas.split(', ').slice(0, 2).join(', ')}...</small>
-            </div>
         </div>
     `).join('');
 }
 
-// MANEJO DE ERRORES MEJORADO
+// MANEJO DE ERRORES
 function showError(message) {
-    // Crear o reutilizar elemento de error
-    let errorDiv = document.getElementById('errorMessage');
-    if (!errorDiv) {
-        errorDiv = document.createElement('div');
-        errorDiv.id = 'errorMessage';
-        errorDiv.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #e74c3c;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            z-index: 1000;
-            max-width: 300px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: none;
-        `;
-        document.body.appendChild(errorDiv);
+    alert('⚠️ ' + message);
+}
+
+// FUNCIONES DE LOADING
+function showLoading(message) {
+    if (elements.loading) {
+        elements.loading.style.display = 'block';
+        const p = elements.loading.querySelector('p');
+        if (p) p.textContent = message;
     }
-    
-    errorDiv.textContent = '⚠️ ' + message;
-    errorDiv.style.display = 'block';
-    
-    // Auto-ocultar después de 5 segundos
-    setTimeout(() => {
-        errorDiv.style.display = 'none';
-    }, 5000);
 }
 
-// PRE-CARGA DE RECURSOS
-function preloadResources() {
-    console.log('📦 Pre-cargando recursos...');
-    // Aquí podrías pre-cargar el modelo TensorFlow.js
+function hideLoading() {
+    if (elements.loading) {
+        elements.loading.style.display = 'none';
+    }
 }
 
-// EXPORTAR FUNCIONES PARA DEBUGGING
-window.appDebug = {
-    config: CONFIG,
-    elements: elements,
-    currentImage: () => currentImage,
-    simulateAnalysis: analyzeImage
-};
-
-console.log('✅ JavaScript optimizado cargado - Versión Mejorada');
+console.log('✅ IA Real integrada - Lista para usar');
