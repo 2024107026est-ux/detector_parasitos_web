@@ -1,102 +1,97 @@
-// ===== CÓDIGO OPTIMIZADO - CARGA RÁPIDA =====
-
-// CONFIGURACIÓN
+// Configuración básica
 const CONFIG = {
     modelPath: 'modelo/model.json',
-    imageSize: 224
+    imageSize: 224,
+    classes: [
+        { name: 'ascaris', displayName: 'Ascaris', description: 'Gusano redondo grande' },
+        { name: 'trichuris', displayName: 'Trichuris', description: 'Gusano con forma de látigo' },
+        { name: 'giardia', displayName: 'Giardia', description: 'Protozoo en forma de lágrima' },
+        { name: 'entamoeba', displayName: 'Entamoeba', description: 'Protozoo irregular' },
+        { name: 'hymenolepis', displayName: 'Hymenolepis', description: 'Tenia pequeña' }
+    ]
 };
 
-// MEJOR MANEJO DE CARGA
 let model = null;
+let currentImage = null;
 
-async function loadModel() {
-    if (model) {
-        console.log('✅ Modelo ya estaba cargado');
-        return model;
-    }
-    
-    console.log('🔄 Cargando modelo...');
-    showLoading('Cargando inteligencia artificial...');
-    
-    try {
-        // Simular carga del modelo (en tu caso real sería TensorFlow.js)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        model = { name: 'modelo_parasitos' };
-        console.log('✅ Modelo cargado exitosamente');
-        hideLoading();
-        return model;
-    } catch (error) {
-        console.error('❌ Error:', error);
-        showError('No se pudo cargar el modelo');
-        return null;
-    }
+// Elementos del DOM
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const previewSection = document.getElementById('previewSection');
+const previewImage = document.getElementById('previewImage');
+
+// Inicialización
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Aplicación iniciada');
+    setupEventListeners();
+});
+
+// Configurar eventos
+function setupEventListeners() {
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', handleFileSelect);
+    analyzeBtn.addEventListener('click', analyzeImage);
 }
 
-// FUNCIÓN MEJORADA PARA ANALIZAR
-async function analyzeImage() {
-    if (!currentImage) {
-        showError('Por favor selecciona una imagen primero');
+// Manejar selección de archivo
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+}
+
+// Procesar archivo
+function handleFile(file) {
+    if (!file.type.match('image.*')) {
+        alert('Por favor selecciona una imagen válida (JPG, JPEG, PNG)');
         return;
     }
     
-    const model = await loadModel();
-    if (!model) return;
+    currentImage = file;
     
-    // Mostrar que está analizando
-    showLoading('Analizando imagen con IA...');
+    // Mostrar vista previa
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        previewSection.style.display = 'block';
+        analyzeBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Analizar imagen (simulación)
+function analyzeImage() {
+    if (!currentImage) return;
+    
+    analyzeBtn.disabled = true;
+    analyzeBtn.textContent = '🔍 Analizando...';
     
     // Simular análisis
     setTimeout(() => {
-        hideLoading();
-        showResults();
-    }, 3000);
-}
-
-// MOSTRAR RESULTADOS
-function showResults() {
-    const results = [
-        { name: 'Ascaris', confidence: 85 },
-        { name: 'Giardia', confidence: 10 },
-        { name: 'Trichuris', confidence: 5 }
-    ];
-    
-    const bestResult = results[0];
-    document.getElementById('resultTitle').textContent = bestResult.name + ' Detectado';
-    document.getElementById('confidenceText').textContent = bestResult.confidence + '%';
-    
-    // Animar la barra
-    animateConfidenceBar(bestResult.confidence);
-}
-
-// ANIMAR BARRA DE CONFIANZA
-function animateConfidenceBar(confidence) {
-    const bar = document.getElementById('confidenceFill');
-    bar.style.width = '0%';
-    
-    setTimeout(() => {
-        bar.style.width = confidence + '%';
-    }, 100);
-}
-
-// FUNCIONES DE LOADING
-function showLoading(message) {
-    const loading = document.getElementById('loading');
-    if (loading) {
-        loading.style.display = 'block';
-        loading.querySelector('p').textContent = message;
-    }
-}
-
-function hideLoading() {
-    const loading = document.getElementById('loading');
-    if (loading) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '🧠 Analizar con IA';
+        
+        // Mostrar resultados de ejemplo
+        const resultsSection = document.getElementById('resultsSection');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        
+        resultsSection.style.display = 'block';
         loading.style.display = 'none';
-    }
+        results.style.display = 'block';
+        
+        // Resultado aleatorio de ejemplo
+        const randomIndex = Math.floor(Math.random() * CONFIG.classes.length);
+        const randomConfidence = Math.floor(Math.random() * 30) + 70;
+        
+        document.getElementById('resultTitle').textContent = CONFIG.classes[randomIndex].displayName + ' Detectado';
+        document.getElementById('confidenceText').textContent = randomConfidence + '%';
+        
+        // Animar barra
+        const confidenceFill = document.getElementById('confidenceFill');
+        confidenceFill.style.width = randomConfidence + '%';
+        
+    }, 2000);
 }
 
-// MANEJO DE ERRORES
-function showError(message) {
-    alert('⚠️ ' + message);
-}
-
-console.log('✅ JavaScript optimizado cargado');
+console.log('✅ JavaScript cargado');
