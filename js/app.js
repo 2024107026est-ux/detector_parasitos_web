@@ -13,7 +13,7 @@ const CLASSES = {
 };
 
 async function initApp() {
-    console.log("Iniciando Detector de Parásitos");
+    console.log("🧪 Iniciando Detector de Parásitos - Modo Gótico");
     try {
         await loadAIModel();
         setupEventListeners();
@@ -25,7 +25,7 @@ async function initApp() {
 }
 
 async function loadAIModel() {
-    console.log("Cargando modelo...");
+    console.log("🔄 Cargando modelo de IA...");
     updateUIStatus('loading');
     
     try {
@@ -34,17 +34,17 @@ async function loadAIModel() {
         }
         
         const response = await fetch(MODEL_PATH);
-        if (!response.ok) throw new Error('No acceso al modelo');
+        if (!response.ok) throw new Error('No se puede acceder al modelo');
         
         aiModel = await tf.loadLayersModel(MODEL_PATH, {
             onProgress: (fraction) => {
                 const percent = Math.round(fraction * 100);
-                updateUIStatus('loading', percent);
+                updateUIStatus('loading', percent + '%');
             }
         });
         
-        console.log("Modelo cargado");
-        console.log("Input shape:", aiModel.inputs[0].shape);
+        console.log("✅ Modelo cargado exitosamente");
+        console.log("📐 Input shape:", aiModel.inputs[0].shape);
         
         await warmUpModel();
         modelLoaded = true;
@@ -52,23 +52,26 @@ async function loadAIModel() {
         updateUIStatus('ready');
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error cargando modelo:', error);
         await enableSimulationMode();
     }
 }
 
 async function warmUpModel() {
     try {
+        console.log("🔥 Precalentando modelo...");
         const warmUpTensor = tf.zeros([1, 224, 224, 3]);
         const prediction = await aiModel.predict(warmUpTensor);
         warmUpTensor.dispose();
         prediction.dispose();
+        console.log("✅ Precalentamiento completado");
     } catch (error) {
-        console.warn("Error precalentamiento:", error);
+        console.warn("⚠️ Error en precalentamiento:", error);
     }
 }
 
 async function enableSimulationMode() {
+    console.warn("🎭 Activando modo simulación");
     modelLoaded = false;
     usingSimulation = true;
     updateUIStatus('simulation');
@@ -77,6 +80,7 @@ async function enableSimulationMode() {
 async function processImage(imageFile) {
     if (!modelLoaded && !usingSimulation) return;
     
+    console.log("🖼️ Procesando imagen:", imageFile.name);
     updateUIStatus('processing');
     
     try {
@@ -89,12 +93,13 @@ async function processImage(imageFile) {
         displayResults(results);
         updateUIStatus('ready');
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error procesando imagen:', error);
         updateUIStatus('error');
     }
 }
 
 async function predictWithAI(imageFile) {
+    console.log("🤖 Realizando análisis con IA...");
     const imageTensor = await loadAndProcessImage(imageFile);
     
     try {
@@ -123,10 +128,10 @@ async function loadAndProcessImage(file) {
                     .div(255.0);
                 resolve(tensor);
             };
-            img.onerror = () => reject(new Error('Error imagen'));
+            img.onerror = () => reject(new Error('Error cargando imagen'));
             img.src = e.target.result;
         };
-        reader.onerror = () => reject(new Error('Error archivo'));
+        reader.onerror = () => reject(new Error('Error leyendo archivo'));
         reader.readAsDataURL(file);
     });
 }
@@ -146,7 +151,8 @@ function processPredictionResults(results) {
 }
 
 async function simulatePrediction() {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log("🎭 Simulando predicción...");
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     const randomScores = Array(5).fill(0).map(() => Math.random());
     const total = randomScores.reduce((a, b) => a + b, 0);
@@ -165,17 +171,24 @@ async function simulatePrediction() {
 }
 
 function displayResults(results) {
+    console.log("📊 Mostrando resultados:", results);
     const resultsDiv = document.getElementById('results');
     if (!resultsDiv) return;
     
+    const confidenceColor = results.confidence > 80 ? '#00ff00' : 
+                           results.confidence > 60 ? '#daa520' : '#dc143c';
+    
     let html = '<div class="result-card">';
-    html += '<h3>Resultado</h3>';
-    html += '<div><strong>Parásito:</strong> ' + results.className + '</div>';
-    html += '<div><strong>Confianza:</strong> ' + results.confidence + '%</div>';
+    html += '<h3>🔍 RESULTADO DEL ANÁLISIS</h3>';
+    html += '<div class="prediction">🎯 <strong>Parásito Detectado:</strong> ' + results.className + '</div>';
+    html += '<div class="confidence" style="color: ' + confidenceColor + '">';
+    html += '📈 <strong>Nivel de Confianza:</strong> ' + results.confidence + '%</div>';
+    
     if (results.simulation) {
-        html += '<div>⚠️ Modo simulación</div>';
+        html += '<div class="simulation-warning">⚠️ MODO SIMULACIÓN - DATOS DE PRUEBA</div>';
     }
-    html += '<div><small>' + results.timestamp + '</small></div>';
+    
+    html += '<div class="timestamp">🕐 Análisis realizado: ' + results.timestamp + '</div>';
     html += '</div>';
     
     resultsDiv.innerHTML = html;
@@ -186,14 +199,15 @@ function updateUIStatus(status, data = null) {
     if (!statusElement) return;
     
     const messages = {
-        'loading': 'Cargando... ' + (data || ''),
-        'ready': '✅ Modelo listo',
-        'simulation': '⚠️ Modo simulación',
-        'processing': 'Procesando...',
-        'error': '❌ Error'
+        'loading': '🔄 ' + (data || 'Cargando modelo de IA...'),
+        'ready': '✅ SISTEMA LISTO - Sube una muestra para analizar',
+        'simulation': '🎭 MODO SIMULACIÓN ACTIVADO - Usando datos de prueba',
+        'processing': '🔬 Analizando muestra...',
+        'error': '❌ ERROR - Revisa la consola para detalles'
     };
     
-    statusElement.textContent = messages[status] || 'Estado';
+    statusElement.textContent = messages[status] || 'Estado desconocido';
+    statusElement.className = 'model-status status-' + status;
 }
 
 function setupEventListeners() {
@@ -208,7 +222,32 @@ function setupEventListeners() {
         });
         
         uploadArea.addEventListener('click', () => uploadInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                processImage(e.dataTransfer.files[0]);
+            }
+        });
     }
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
+
+window.detectorApp = {
+    loadAIModel,
+    processImage,
+    enableSimulationMode,
+    usingSimulation: () => usingSimulation,
+    modelLoaded: () => modelLoaded
+};
