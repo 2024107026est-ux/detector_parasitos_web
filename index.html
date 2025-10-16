@@ -1,82 +1,45 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detector de Parásitos Intestinales - IA</title>
+    <title>Detector de Parásitos - Estilo Gótico</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.13.0/dist/tf.min.js"></script>
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <h1>🔬 Detector de Parásitos Intestinales</h1>
-            <p>Inteligencia Artificial para diagnóstico asistido</p>
+    <div class="candle-effect"></div>
+    
+    <div class="container">
+        <header class="gothic-header">
+            <h1>DETECTOR DE PARÁSITOS</h1>
+            <div class="subtitle">Análisis de Muestras Biológicas</div>
+        </header>
+
+        <div class="model-status">
+            <span id="model-status">🔄 Inicializando sistema...</span>
         </div>
-    </header>
 
-    <main class="main">
-        <div class="container">
-            <section class="upload-section">
-                <h2>📤 Subir Imagen de Microscopio</h2>
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-content">
-                        <div class="upload-icon">📁</div>
-                        <h3>Arrastra tu imagen aquí</h3>
-                        <p>o haz clic para seleccionar</p>
-                        <p class="formats">Formatos: JPG, JPEG, PNG</p>
-                    </div>
-                    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png" hidden>
-                </div>
-                <button id="analyzeBtn" class="analyze-btn" disabled>🧠 Analizar con IA</button>
-            </section>
-
-            <section class="preview-section" id="previewSection" style="display: none;">
-                <h2>👁️ Vista Previa</h2>
-                <div class="preview-container">
-                    <img id="previewImage" class="preview-image">
-                    <div class="image-info">
-                        <p id="imageName">Nombre: -</p>
-                        <p id="imageSize">Tamaño: -</p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="results-section" id="resultsSection" style="display: none;">
-                <h2>📊 Resultados del Análisis</h2>
-                <div class="results-container">
-                    <div class="loading" id="loading">
-                        <div class="spinner"></div>
-                        <p>La IA está analizando la imagen...</p>
-                    </div>
-                    <div class="results" id="results" style="display: none;">
-                        <div class="main-result">
-                            <h3 id="resultTitle">Parásito Detectado</h3>
-                            <div class="confidence">
-                                <div class="confidence-fill" id="confidenceFill"></div>
-                                <span class="confidence-text" id="confidenceText">0%</span>
-                            </div>
-                        </div>
-                        <div class="all-results" id="allResults"></div>
-                        <div class="description" id="description"></div>
-                    </div>
-                </div>
-            </section>
+        <div class="upload-area" id="upload-area">
+            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+            <div class="upload-icon">🩸</div>
+            <div class="upload-text">
+                <h3>SUBE TU MUESTRA</h3>
+                <p>Arrastra o haz clic para analizar una imagen de parásitos</p>
+                <p><small>Formatos: JPG, PNG, WEBP</small></p>
+            </div>
         </div>
-    </main>
 
-    <section class="parasites-info">
-        <div class="container">
-            <h2>🦠 Parásitos que Detecta la IA</h2>
-            <div class="parasites-grid" id="parasitesGrid"></div>
+        <div id="results" class="results-container">
+            <!-- Los resultados aparecerán aquí -->
         </div>
-    </section>
 
-    <footer class="footer">
-        <div class="container">
-            <p>🧪 Proyecto de Inteligencia Artificial - Detección de Parásitos Intestinales</p>
-        </div>
-    </footer>
+        <footer class="gothic-footer">
+            <p>Sistema de Detección de Parásitos - Análisis con IA</p>
+            <p>🔬 Tecnología de vanguardia para diagnóstico médico</p>
+        </footer>
+    </div>
 
     <script src="js/app.js"></script>
 </body>
