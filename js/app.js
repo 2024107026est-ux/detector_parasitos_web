@@ -1,81 +1,73 @@
 
+// DETECTOR DE PARÁSITOS - VERSIÓN SIMPLE
 const MODEL_PATH = 'modelo/model.json';
 let aiModel = null;
 let modelLoaded = false;
-let loadMethod = 'none';
 
 const CLASSES = ['Ascaris', 'Giardia', 'Hookworm', 'Trichuris', 'Negative'];
 
 async function init() {
-    console.log("🚀 Iniciando - MÉTODOS MÚLTIPLES");
-    await loadModelWithMultipleMethods();
+    console.log("🚀 Iniciando detector simple");
+    await loadModelSimple();
     setupEvents();
 }
 
-async function loadModelWithMultipleMethods() {
-    console.log("🔧 Probando múltiples métodos de carga...");
+async function loadModelSimple() {
+    console.log("🔄 Cargando modelo...");
     
-    if (typeof tf === 'undefined') {
-        console.error("❌ TensorFlow.js no cargado");
-        return;
-    }
-    
-    // MÉTODO 1: loadGraphModel
-    console.log("1️⃣ Intentando loadGraphModel...");
     try {
-        aiModel = await tf.loadGraphModel(MODEL_PATH);
-        loadMethod = 'graph';
-        console.log("🎉 ¡ÉXITO con loadGraphModel!");
-        console.log("Inputs:", aiModel.inputs);
-        modelLoaded = true;
-        document.getElementById('model-status').textContent = '✅ IA REAL - GraphModel';
-        return;
-    } catch (e) {
-        console.warn("❌ loadGraphModel falló:", e.message);
-    }
-    
-    // MÉTODO 2: loadLayersModel con opciones
-    console.log("2️⃣ Intentando loadLayersModel...");
-    try {
-        aiModel = await tf.loadLayersModel(MODEL_PATH, {
-            strict: false  // Más tolerante
-        });
-        loadMethod = 'layers';
-        console.log("🎉 ¡ÉXITO con loadLayersModel!");
-        console.log("Input shape:", aiModel.inputs[0].shape);
-        modelLoaded = true;
-        document.getElementById('model-status').textContent = '✅ IA REAL - LayersModel';
-        return;
-    } catch (e) {
-        console.warn("❌ loadLayersModel falló:", e.message);
-    }
-    
-    // MÉTODO 3: Carga manual desde JSON
-    console.log("3️⃣ Intentando carga manual...");
-    try {
-        const modelJson = await fetch(MODEL_PATH).then(r => r.json());
-        console.log("📋 Estructura del modelo:", {
-            format: modelJson.format,
-            generatedBy: modelJson.generatedBy
+        // Verificar TensorFlow.js
+        if (typeof tf === 'undefined') {
+            throw new Error('TensorFlow.js no cargado');
+        }
+        console.log("✅ TensorFlow.js disponible");
+        
+        // Verificar acceso al modelo
+        console.log("🔍 Verificando modelo...");
+        const response = await fetch(MODEL_PATH);
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        console.log("✅ Modelo accesible");
+        
+        // Analizar estructura
+        const modelData = await response.json();
+        console.log("📋 Estructura:", {
+            format: modelData.format,
+            hasModelTopology: !!modelData.modelTopology
         });
         
-        // Intentar cargar con diferentes enfoques
+        // Cargar modelo
+        console.log("📥 Cargando con tf.loadLayersModel...");
         aiModel = await tf.loadLayersModel(MODEL_PATH);
-        loadMethod = 'manual';
-        console.log("🎉 ¡ÉXITO con carga manual!");
+        
+        console.log("🎉 ¡MODELO CARGADO!");
+        console.log("📐 Input shape:", aiModel.inputs[0].shape);
+        
+        // Precalentar
+        console.log("🔥 Precalentando...");
+        const testTensor = tf.zeros([1, 224, 224, 3]);
+        const prediction = aiModel.predict(testTensor);
+        console.log("📤 Output shape:", prediction.shape);
+        testTensor.dispose();
+        prediction.dispose();
+        
         modelLoaded = true;
-        document.getElementById('model-status').textContent = '✅ IA REAL - Manual';
-        return;
-    } catch (e) {
-        console.error("❌ Todos los métodos fallaron:", e);
-        document.getElementById('model-status').textContent = '❌ Error cargando IA';
+        document.getElementById('model-status').textContent = '✅ IA REAL ACTIVA';
+        
+    } catch (error) {
+        console.error('💥 Error:', error);
+        document.getElementById('model-status').textContent = '❌ Error: ' + error.message;
     }
 }
 
 async function processImage(file) {
     if (!modelLoaded) {
+        console.log("🎭 Usando simulación");
         return simulatePrediction();
     }
+    
+    console.log("🤖 Procesando con IA real...");
     
     return new Promise((resolve) => {
         const reader = new FileReader();
@@ -88,14 +80,9 @@ async function processImage(file) {
                     .expandDims(0)
                     .div(255.0);
                 
-                let prediction;
-                if (loadMethod === 'graph') {
-                    prediction = aiModel.execute(tensor);
-                } else {
-                    prediction = aiModel.predict(tensor);
-                }
-                
+                const prediction = aiModel.predict(tensor);
                 const results = await prediction.data();
+                
                 const scores = Array.from(results);
                 const maxScore = Math.max(...scores);
                 const predictedClass = scores.indexOf(maxScore);
@@ -107,7 +94,7 @@ async function processImage(file) {
                     predictedClass: predictedClass,
                     className: CLASSES[predictedClass],
                     confidence: (maxScore * 100).toFixed(2),
-                    simulation: !modelLoaded
+                    simulation: false
                 });
             };
             img.src = e.target.result;
@@ -130,12 +117,15 @@ async function simulatePrediction() {
 function showResults(result) {
     const resultsDiv = document.getElementById('results');
     const status = result.simulation ? 'MODO SIMULACIÓN' : 'IA REAL';
+    const statusColor = result.simulation ? 'orange' : 'green';
     
     resultsDiv.innerHTML = `
         <div class="result-card">
             <h3>🔍 RESULTADO - ${status}</h3>
             <div class="prediction">🎯 ${result.className}</div>
-            <div class="confidence">📈 ${result.confidence}%</div>
+            <div class="confidence" style="color: ${statusColor}">
+                📈 ${result.confidence}% confianza
+            </div>
             <div class="timestamp">🕐 ${new Date().toLocaleString()}</div>
         </div>
     `;
